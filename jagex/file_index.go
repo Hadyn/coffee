@@ -50,6 +50,10 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
 		groupIDs[i] = currentGroupID
 	}
 
+	for _, groupID := range groupIDs {
+		fi.Groups[groupID] = &FileGroupEntry{}
+	}
+
 	if flags&flagNamed != 0 {
 		for _, groupID := range groupIDs {
 			group := fi.Groups[groupID]
@@ -87,6 +91,15 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
 			}
 
 			fileIDs[i][j] = currentFileID
+		}
+	}
+
+	for _, groupID := range groupIDs {
+		group := fi.Groups[groupID]
+		group.Files = make([]*FileEntry, maximumFileIDs[groupID])
+
+		for _, fileID := range fileIDs[groupID] {
+			group.Files[fileID] = &FileEntry{}
 		}
 	}
 
