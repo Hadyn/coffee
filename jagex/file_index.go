@@ -1,7 +1,9 @@
 package jagex
 
+type FileIndexFlags uint8
+
 const (
-	flagNamed = 0x1
+	IndexFlagNamed FileIndexFlags = 0x1
 )
 
 type FileIndex struct {
@@ -32,7 +34,7 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
 	}
 
 	var (
-		flags      = rb.GetUint8()
+		flags      = FileIndexFlags(rb.GetUint8())
 		groupCount = rb.GetUint16()
 	)
 
@@ -54,7 +56,7 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
 		fi.Groups[groupID] = &FileGroupEntry{}
 	}
 
-	if flags&flagNamed != 0 {
+	if flags&IndexFlagNamed != 0 {
 		for _, groupID := range groupIDs {
 			group := fi.Groups[groupID]
 			group.NameHash = rb.GetUint32()
@@ -103,7 +105,7 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
 		}
 	}
 
-	if flags&flagNamed != 0 {
+	if flags&IndexFlagNamed != 0 {
 		for i, groupID := range groupIDs {
 			for _, fileID := range fileIDs[i] {
 				var (
