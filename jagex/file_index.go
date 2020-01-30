@@ -1,9 +1,16 @@
 package jagex
 
+import "fmt"
+
 type FileIndexFlags uint8
 
 const (
 	IndexFlagNamed FileIndexFlags = 0x1
+)
+
+const (
+	minimumSupportedFormat uint8 = 5
+	maximumSupportedFormat uint8 = 6
 )
 
 type FileIndex struct {
@@ -29,6 +36,10 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
 	)
 
 	format := rb.GetUint8()
+	if format < minimumSupportedFormat || format > maximumSupportedFormat {
+		return nil, fmt.Errorf("format is not supported: %d", format)
+	}
+
 	if format >= 6 {
 		fi.Revision = rb.GetUint32()
 	}
