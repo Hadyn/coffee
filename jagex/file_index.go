@@ -9,8 +9,8 @@ const (
 )
 
 const (
-	minimumSupportedFormat uint8 = 5
-	maximumSupportedFormat uint8 = 6
+	minimumSupportedIndexFormat uint8 = 5
+	maximumSupportedIndexFormat uint8 = 6
 )
 
 type FileIndex struct {
@@ -36,7 +36,7 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
 	)
 
 	format := rb.GetUint8()
-	if format < minimumSupportedFormat || format > maximumSupportedFormat {
+	if format < minimumSupportedIndexFormat || format > maximumSupportedIndexFormat {
 		return nil, fmt.Errorf("format is not supported: %d", format)
 	}
 

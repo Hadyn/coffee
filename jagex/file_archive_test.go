@@ -8,24 +8,60 @@ import (
 
 func TestDecryptFileArchive(t *testing.T) {
     tests := []struct {
-        name      string
-        giveBytes []byte
-        giveKey   []byte
-        wantBytes []byte
+        name         string
+        giveBytes    []byte
+        giveKey      []byte
+        wantBytes    []byte
         wantError    bool
         wantErrorMsg string
     }{
         {
-            name:      "uncompressed boundary",
-            giveBytes: []byte{},
-            giveKey:   []byte{},
-            wantBytes: []byte{},
+            name:      "uncompressed aligned",
+            giveBytes: []byte{
+                ArchiveCompressionNone.AsByte(), 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0,
+            },
+            giveKey: []byte{
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            },
+            wantBytes: []byte{
+                ArchiveCompressionNone.AsByte(), 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0,
+            },
         },
         {
-            name:      "uncompressed off boundary",
-            giveBytes: []byte{},
-            giveKey:   []byte{},
-            wantBytes: []byte{},
+            name:      "uncompressed unaligned",
+            giveBytes: []byte{
+                ArchiveCompressionNone.AsByte(), 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            },
+            giveKey: []byte{
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            },
+            wantBytes: []byte{
+                ArchiveCompressionNone.AsByte(), 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            },
+        },
+        {
+            name:      "uncompressed aligned trailer",
+            giveBytes: []byte{
+                ArchiveCompressionNone.AsByte(), 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+            },
+            giveKey: []byte{
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            },
+            wantBytes: []byte{
+                ArchiveCompressionNone.AsByte(), 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+            },
+        },
+        {
+            name: "uncompressed unaligned trailer",
+            giveBytes: []byte{
+                ArchiveCompressionNone.AsByte(), 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+            },
+            giveKey: []byte{
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            },
+            wantBytes: []byte{
+                ArchiveCompressionNone.AsByte(), 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+            },
         },
     }
 

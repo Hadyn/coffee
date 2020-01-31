@@ -48,7 +48,7 @@ func DecryptFileArchive(bs []byte, key []byte) ([]byte, error) {
     }
 
     copied := make([]byte, len(bs))
-    copy(copied, bs[:minimumArchiveHeaderLength])
+    copy(copied, bs)
 
     archiveLength := FileArchiveLength(bs)
     for i := minimumArchiveHeaderLength; i < archiveLength-xtea.BlockSize; i += xtea.BlockSize {
@@ -59,10 +59,6 @@ func DecryptFileArchive(bs []byte, key []byte) ([]byte, error) {
 }
 
 func FileArchiveLength(bs []byte) int {
-    var (
-        rb = ReadBuffer(bs)
-        c  = ArchiveCompression(rb.GetUint8())
-    )
-
-    return c.HeaderLength() + rb.GetUint32AsInt()
+    rb := ReadBuffer(bs)
+    return ArchiveCompression(rb.GetUint8()).HeaderLength() + rb.GetUint32AsInt()
 }
