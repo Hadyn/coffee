@@ -1,4 +1,4 @@
-module github.com/0x10F/coffee
+module github.com/hadyn/coffee
 
 go 1.13
 

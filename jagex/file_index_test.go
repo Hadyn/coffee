@@ -14,8 +14,8 @@ func TestDecodeFileIndex(t *testing.T) {
 		wantErrorMsg  string
 	}{
 		{
-			name: "simple",
-			give: loadBytes(t, "index.simple.dat"),
+			name: "sparse",
+			give: loadBytes(t, "index.sparse.dat"),
 			wantFileIndex: &FileIndex{
 				Revision: 0,
 				Groups: []*FileGroupEntry{
@@ -24,6 +24,100 @@ func TestDecodeFileIndex(t *testing.T) {
 						Checksum: 1,
 						Revision: 1,
 						Files: []*FileEntry{
+							{NameHash: 0},
+							{NameHash: 0},
+						},
+					},
+					{
+						NameHash: 0,
+						Checksum: 2,
+						Revision: 2,
+						Files: []*FileEntry{
+							{NameHash: 0},
+							{NameHash: 0},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "named sparse",
+			give: loadBytes(t, "index.named-sparse.dat"),
+			wantFileIndex: &FileIndex{
+				Revision: 0,
+				Groups: []*FileGroupEntry{
+					{
+						NameHash: 1,
+						Checksum: 1,
+						Revision: 1,
+						Files: []*FileEntry{
+							{NameHash: 1},
+							{NameHash: 2},
+						},
+					},
+					{
+						NameHash: 2,
+						Checksum: 2,
+						Revision: 2,
+						Files: []*FileEntry{
+							{NameHash: 3},
+							{NameHash: 4},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "non sparse",
+			give: loadBytes(t, "index.non-sparse.dat"),
+			wantFileIndex: &FileIndex{
+				Revision: 0,
+				Groups: []*FileGroupEntry{
+					{
+						NameHash: 0,
+						Checksum: 1,
+						Revision: 1,
+						Files: []*FileEntry{
+							{NameHash: 0},
+							nil,
+							{NameHash: 0},
+						},
+					},
+					nil,
+					{
+						NameHash: 0,
+						Checksum: 2,
+						Revision: 2,
+						Files: []*FileEntry{
+							{NameHash: 0},
+							nil,
+							{NameHash: 0},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "revisioned",
+			give: loadBytes(t, "index.revisioned.dat"),
+			wantFileIndex: &FileIndex{
+				Revision: 1,
+				Groups: []*FileGroupEntry{
+					{
+						NameHash: 0,
+						Checksum: 1,
+						Revision: 1,
+						Files: []*FileEntry{
+							{NameHash: 0},
+							{NameHash: 0},
+						},
+					},
+					{
+						NameHash: 0,
+						Checksum: 2,
+						Revision: 2,
+						Files: []*FileEntry{
+							{NameHash: 0},
 							{NameHash: 0},
 						},
 					},
