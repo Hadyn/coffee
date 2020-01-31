@@ -15,7 +15,7 @@ func TestDecodeFileIndex(t *testing.T) {
 	}{
 		{
 			name: "simple",
-			give: loadBytes(t, "fi.simple.dat"),
+			give: loadBytes(t, "index.simple.dat"),
 			wantFileIndex: &FileIndex{
 				Revision: 0,
 				Groups: []*FileGroupEntry{
@@ -32,7 +32,7 @@ func TestDecodeFileIndex(t *testing.T) {
 		},
 		{
 			name: "unsupported format",
-			give: loadBytes(t, "fi.bad-format.dat"),
+			give: loadBytes(t, "index.bad-format.dat"),
 			wantError: true,
 			wantErrorMsg: "format is not supported: 1",
 		},
