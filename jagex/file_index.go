@@ -63,6 +63,7 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
 		groupIDs[i] = currentGroupID
 	}
 
+	fi.Groups = make([]*FileGroupEntry, maximumGroupID + 1)
 	for _, groupID := range groupIDs {
 		fi.Groups[groupID] = &FileGroupEntry{}
 	}
@@ -89,9 +90,9 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
 		maximumFileIDs = make([]uint16, groupCount)
 	)
 
-	for _, groupID := range groupIDs {
+	for i := range groupIDs {
 		fileCount := rb.GetUint16()
-		fileIDs[groupID] = make([]uint16, fileCount)
+		fileIDs[i] = make([]uint16, fileCount)
 	}
 
 	for i := range groupIDs {
@@ -107,11 +108,11 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
 		}
 	}
 
-	for _, groupID := range groupIDs {
+	for i, groupID := range groupIDs {
 		group := fi.Groups[groupID]
-		group.Files = make([]*FileEntry, maximumFileIDs[groupID])
+		group.Files = make([]*FileEntry, maximumFileIDs[i] + 1)
 
-		for _, fileID := range fileIDs[groupID] {
+		for _, fileID := range fileIDs[i] {
 			group.Files[fileID] = &FileEntry{}
 		}
 	}
