@@ -6,6 +6,45 @@ import (
     "testing"
 )
 
+func TestDecompressFileArchive(t *testing.T) {
+    tests := []struct {
+        name         string
+        giveBytes    []byte
+        wantBytes    []byte
+        wantError    bool
+        wantErrorMsg string
+    }{
+        {
+            name: "uncompressed",
+            giveBytes: []byte{},
+            wantBytes: []byte{},
+        },
+        {
+            name: "bzip",
+            giveBytes: []byte{},
+            wantBytes: []byte{},
+        },
+        {
+            name: "gzip",
+            giveBytes: []byte{},
+            wantBytes: []byte{},
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            decompressed, err := DecompressFileArchive(tt.giveBytes)
+
+            if tt.wantError {
+                assert.EqualError(t, err, tt.wantErrorMsg)
+            } else {
+                assert.NoError(t, err)
+                assert.Equal(t, tt.wantBytes, decompressed)
+            }
+        })
+    }
+}
+
 func TestDecryptFileArchive(t *testing.T) {
     tests := []struct {
         name         string
