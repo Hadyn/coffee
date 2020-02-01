@@ -14,15 +14,15 @@ const (
 )
 
 type CacheReader struct {
-    lookup   io.ReadSeeker
-    blocks   io.ReadSeeker
+    index  io.ReadSeeker
+    blocks io.ReadSeeker
     fileType uint8
-    swap     [cacheBlockLength]byte
+    buf      [cacheBlockLength]byte
 }
 
-func NewCacheReader(lookup io.ReadSeeker, blocks io.ReadSeeker, fileType uint8) *CacheReader {
+func NewCacheReader(index io.ReadSeeker, blocks io.ReadSeeker, fileType uint8) *CacheReader {
     return &CacheReader{
-        lookup:   lookup,
+        index:    index,
         blocks:   blocks,
         fileType: fileType,
     }
@@ -95,15 +95,15 @@ type fileDescriptor struct {
 }
 
 func (r *CacheReader) readFileDescriptor(fileID uint16) (desc fileDescriptor, err error) {
-    if _, err = r.lookup.Seek(int64(fileID*cacheDescriptorLength), io.SeekStart); err != nil {
+    if _, err = r.index.Seek(int64(fileID*cacheDescriptorLength), io.SeekStart); err != nil {
         return
     }
 
-    if _, err = io.ReadFull(r.lookup, r.swap[:cacheDescriptorLength]); err != nil {
+    if _, err = io.ReadFull(r.index, r.buf[:cacheDescriptorLength]); err != nil {
         return
     }
 
-    rb := ReadBuffer(r.swap[:cacheDescriptorLength])
+    rb := ReadBuffer(r.buf[:cacheDescriptorLength])
 
     return fileDescriptor{
         length: rb.GetUint24(),
@@ -124,17 +124,17 @@ func (r *CacheReader) readBlock(blockID uint32) (block cacheBlock, err error) {
         return
     }
 
-    if _, err = io.ReadFull(r.blocks, r.swap[:cacheBlockLength]); err != nil {
+    if _, err = io.ReadFull(r.blocks, r.buf[:cacheBlockLength]); err != nil {
         return
     }
 
-    rb := ReadBuffer(r.swap[:cacheBlockLength])
+    rb := ReadBuffer(r.buf[:cacheBlockLength])
 
     return cacheBlock{
         fid:   rb.GetUint16(),
         nonce: rb.GetUint16(),
         bid:   rb.GetUint24(),
         ft:    rb.GetUint8(),
-        data:  r.swap[cacheBlockHeaderLength:],
+        data:  r.buf[cacheBlockHeaderLength:],
     }, nil
 }

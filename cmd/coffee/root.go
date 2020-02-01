@@ -5,11 +5,8 @@ func main() {
     //      - cache
     //          - read
     //              - Reads a binary stream directly from the cache and pipes it into STDOUT.
-    //          - write
-    //              - Writes a binary stream from STDIN directly into the cache.
-    //          - compress
-    //              - Reads a binary stream from STDIN and compresses it into an archive.
-    //              - Flags: Compression, Version.
     //          - decompress
     //              - Reads a binary stream from STDIN and decompresses the archive.
+
+    // coffee cache read --index-file "main_file_cache.idx0" --blocks-file "main_file_cache.dat2" 0 0
 }
