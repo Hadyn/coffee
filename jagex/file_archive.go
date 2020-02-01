@@ -47,16 +47,8 @@ func (c ArchiveCompression) AsByte() byte { return byte(c) }
 func DecompressFileArchive(bs []byte) ([]byte, error) {
     rb := ReadBuffer(bs)
 
-    if err := rb.CheckRemaining("insufficient bytes to read compression type", 1); err != nil {
-        return nil, err
-    }
-
     c := ArchiveCompression(rb.GetUint8())
     if err := c.Check(); err != nil {
-        return nil, err
-    }
-
-    if err := rb.CheckRemaining("insufficient bytes to read compressed length", 4); err != nil {
         return nil, err
     }
 
@@ -64,32 +56,11 @@ func DecompressFileArchive(bs []byte) ([]byte, error) {
 
     switch c {
     case ArchiveCompressionNone:
-        if err := rb.CheckRemaining(
-            "insufficient bytes to read compressed contents",
-            compressedLength,
-        ); err != nil {
-            return nil, err
-        }
-
         copied := make([]byte, compressedLength)
         copy(copied, rb.Get(compressedLength))
         return copied, nil
     case ArchiveCompressionBZIP, ArchiveCompressionGZIP:
-        if err := rb.CheckRemaining(
-            "insufficient bytes to read uncompressed length",
-            4,
-        ); err != nil {
-            return nil, err
-        }
-
         decompressed := make([]byte, rb.GetUint32())
-
-        if err := rb.CheckRemaining(
-            "insufficient bytes to read compressed contents",
-            compressedLength,
-        ); err != nil {
-            return nil, err
-        }
 
         var r io.Reader
         switch c {
@@ -151,16 +122,8 @@ func DecryptFileArchive(bs []byte, key []byte) ([]byte, error) {
 func FileArchiveLength(bs []byte) (int, error) {
     rb := ReadBuffer(bs)
 
-    if err := rb.CheckRemaining("insufficient bytes to read compression type", 1); err != nil {
-        return 0, err
-    }
-
     c := ArchiveCompression(rb.GetUint8())
     if err := c.Check(); err != nil {
-        return 0, err
-    }
-
-    if err := rb.CheckRemaining("insufficient bytes to read compressed length", 4); err != nil {
         return 0, err
     }
 

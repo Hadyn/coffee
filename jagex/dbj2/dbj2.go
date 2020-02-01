@@ -1,4 +1,4 @@
-package jagex
+package dbj2
 
 import (
     "hash"
@@ -6,9 +6,15 @@ import (
 
 type dbj32 uint32
 
-func NewDBJ2() hash.Hash32 {
+func New() hash.Hash32 {
     var s = dbj32(0)
     return &s
+}
+
+func Sum(b []byte) uint32 {
+    h := New()
+    _, _ = h.Write(b)
+    return h.Sum32()
 }
 
 func (d dbj32) Size() int      { return 4 }

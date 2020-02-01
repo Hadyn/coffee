@@ -150,24 +150,6 @@ func TestFileArchiveLength(t *testing.T) {
             wantLength: 10,
             wantError:  false,
         },
-        {
-            name:         "insufficient bytes algorithm",
-            give:         []byte{},
-            wantError:    true,
-            wantErrorMsg: "insufficient bytes to read compression type; expected: 1, actual: 0",
-        },
-        {
-            name:         "insufficient bytes length",
-            give:         []byte{ArchiveCompressionNone.AsByte(), 0, 0, 0},
-            wantError:    true,
-            wantErrorMsg: "insufficient bytes to read compressed length; expected: 4, actual: 3",
-        },
-        {
-            name:         "unrecognized compression",
-            give:         []byte{255, 0, 0, 0, 1, 1},
-            wantError:    true,
-            wantErrorMsg: "unrecognized compression: 255",
-        },
     }
 
     for _, tt := range tests {

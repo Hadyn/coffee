@@ -1,4 +1,4 @@
-package jagex
+package dbj2
 
 import (
     "fmt"
@@ -6,7 +6,7 @@ import (
     "testing"
 )
 
-func TestDbj32Sum(t *testing.T) {
+func TestDBJ2Sum(t *testing.T) {
     tests := []struct{
         giveBytes []byte
         wantSum   uint32
@@ -19,10 +19,7 @@ func TestDbj32Sum(t *testing.T) {
 
     for _, tt := range tests {
         t.Run(fmt.Sprintf("%v", tt.giveBytes), func(t *testing.T) {
-            h := NewDBJ2()
-            _, err := h.Write(tt.giveBytes)
-            assert.NoError(t, err)
-            assert.Equal(t, tt.wantSum, h.Sum32())
+            assert.Equal(t, tt.wantSum, Sum(tt.giveBytes))
         })
     }
 }
