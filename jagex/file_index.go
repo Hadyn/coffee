@@ -32,6 +32,11 @@ type FileEntry struct {
     NameHash uint32
 }
 
+type NamedEntryIndex struct {
+    groupLookup map[uint32]int
+    fileLookup  map[int]map[uint32]int
+}
+
 func DecodeFileIndex(bs []byte) (*FileIndex, error) {
     var (
         fi = &FileIndex{}
@@ -136,15 +141,25 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
     return fi, nil
 }
 
-func (fi *FileIndex) LookupGroupID(groupName string) (groupID int, found bool) {
-   	var (
-   		group *FileGroupEntry
-   		hash = dbj2.Sum([]byte(groupName))
-	)
+func (fi *FileIndex) Size() (size int) {
+    for _, group := range fi.Groups {
+        if group == nil {
+            continue
+        }
+        size++
+    }
+    return
+}
+
+func (fi *FileIndex) FindGroupID(groupName string) (groupID int, found bool) {
+    var (
+        group *FileGroupEntry
+        hash  = dbj2.Sum([]byte(groupName))
+    )
 
     for groupID, group = range fi.Groups {
         if group.NameHash == hash {
-        	found = true
+            found = true
             return
         }
     }
@@ -153,37 +168,96 @@ func (fi *FileIndex) LookupGroupID(groupName string) (groupID int, found bool) {
     return
 }
 
-func (fi *FileIndex) LookupGroup(groupName string) *FileGroupEntry {
-	groupID, found := fi.LookupGroupID(groupName)
-	if !found {
-		return nil
-	}
-	return fi.Groups[groupID]
+func (fi *FileIndex) FindGroup(groupName string) *FileGroupEntry {
+    groupID, found := fi.FindGroupID(groupName)
+    if !found {
+        return nil
+    }
+    return fi.Groups[groupID]
 }
 
-func (fi *FileIndex) LookupFileID(groupName, fileName string) (groupID int, fileID int, found bool) {
-    groupID, found = fi.LookupGroupID(groupName)
+func (fi *FileIndex) FindFileID(groupName, fileName string) (groupID int, fileID int, found bool) {
+    groupID, found = fi.FindGroupID(groupName)
     if !found {
         return
     }
 
-    fileID, found = fi.Groups[groupID].LookupFileID(fileName)
-	return
+    fileID, found = fi.Groups[groupID].FindFileID(fileName)
+    return
 }
 
-func (e *FileGroupEntry) LookupFileID(fileName string) (fileID int, found bool) {
-	var (
-		file *FileEntry
-		hash = dbj2.Sum([]byte(fileName))
-	)
+func (fi *FileIndex) NamedIndex() *NamedEntryIndex {
+    var (
+        size  = fi.Size()
+        index = &NamedEntryIndex{
+            groupLookup: make(map[uint32]int, size),
+            fileLookup:  make(map[int]map[uint32]int, size),
+        }
+    )
 
-	for fileID, file = range e.Files {
-		if file.NameHash == hash {
-			found = true
-			return
-		}
-	}
+    for groupID, group := range fi.Groups {
+        if group == nil {
+            continue
+        }
 
-	fileID, found = 0, false
-	return
+        index.groupLookup[group.NameHash] = groupID
+
+        index.fileLookup[groupID] = make(map[uint32]int, group.Size())
+        for fileID, file := range group.Files {
+            if file == nil {
+                continue
+            }
+
+            index.fileLookup[groupID][file.NameHash] = fileID
+        }
+    }
+
+    return index
+}
+
+func (e *FileGroupEntry) Size() (size int) {
+    for _, file := range e.Files {
+        if file == nil {
+            continue
+        }
+        size++
+    }
+    return
+}
+
+func (e *FileGroupEntry) FindFileID(fileName string) (fileID int, found bool) {
+    var (
+        file *FileEntry
+        hash = dbj2.Sum([]byte(fileName))
+    )
+
+    for fileID, file = range e.Files {
+        if file.NameHash == hash {
+            found = true
+            return
+        }
+    }
+
+    fileID, found = 0, false
+    return
+}
+
+func (e *NamedEntryIndex) LookupGroupID(groupName string) (groupID int, exists bool) {
+    groupID, exists = e.groupLookup[dbj2.Sum([]byte(groupName))]
+    return
+}
+
+func (e *NamedEntryIndex) LookupFileID(groupName, fileName string) (groupID int, fileID int, exists bool) {
+    groupID, exists = e.LookupGroupID(groupName)
+    if !exists {
+        return
+    }
+
+    fileID, exists = e.fileLookup[groupID][dbj2.Sum([]byte(fileName))]
+    if exists {
+        return
+    }
+
+    groupID, fileID, exists = 0, 0, false
+    return
 }

@@ -28,8 +28,8 @@ func NewCacheReader(lookup io.ReadSeeker, blocks io.ReadSeeker, fileType uint8) 
     }
 }
 
-func (r *CacheReader) Get(fid uint16) ([]byte, error) {
-    fd, err := r.readFileDescriptor(fid)
+func (r *CacheReader) Get(fileID uint16) ([]byte, error) {
+    fd, err := r.readFileDescriptor(fileID)
     if err != nil {
         return nil, err
     }
@@ -52,9 +52,9 @@ func (r *CacheReader) Get(fid uint16) ([]byte, error) {
             return nil, err
         }
 
-        if block.fid != fid {
+        if block.fid != fileID {
             return nil, fmt.Errorf(
-                "file identifier mismatch; expected: %d, found: %d", fid, block.fid,
+                "file identifier mismatch; expected: %d, found: %d", fileID, block.fid,
             )
         }
 
@@ -94,8 +94,8 @@ type fileDescriptor struct {
     start  uint32
 }
 
-func (r *CacheReader) readFileDescriptor(fid uint16) (desc fileDescriptor, err error) {
-    if _, err = r.lookup.Seek(int64(fid*cacheDescriptorLength), io.SeekStart); err != nil {
+func (r *CacheReader) readFileDescriptor(fileID uint16) (desc fileDescriptor, err error) {
+    if _, err = r.lookup.Seek(int64(fileID*cacheDescriptorLength), io.SeekStart); err != nil {
         return
     }
 
@@ -119,8 +119,8 @@ type cacheBlock struct {
     data  []byte
 }
 
-func (r *CacheReader) readBlock(bid uint32) (block cacheBlock, err error) {
-    if _, err = r.blocks.Seek(int64(bid*cacheBlockLength), io.SeekStart); err != nil {
+func (r *CacheReader) readBlock(blockID uint32) (block cacheBlock, err error) {
+    if _, err = r.blocks.Seek(int64(blockID*cacheBlockLength), io.SeekStart); err != nil {
         return
     }
 

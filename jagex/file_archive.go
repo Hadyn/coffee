@@ -10,8 +10,8 @@ import (
 )
 
 const (
-    uncompressedHeaderLength = 5
-    compressedHeaderLength   = 9
+    uncompressedArchiveHeaderLength = 5
+    compressedArchiveHeaderLength   = 9
 )
 
 type ArchiveCompression byte
@@ -34,9 +34,9 @@ func (c ArchiveCompression) Check() error {
 func (c ArchiveCompression) HeaderLength() int {
     switch c {
     case ArchiveCompressionNone:
-        return uncompressedHeaderLength
+        return uncompressedArchiveHeaderLength
     case ArchiveCompressionBZIP, ArchiveCompressionGZIP:
-        return compressedHeaderLength
+        return compressedArchiveHeaderLength
     default:
         panic("unhandled compression enumeration")
     }
@@ -112,7 +112,7 @@ func DecryptFileArchive(bs []byte, key []byte) ([]byte, error) {
         return nil, err
     }
 
-    for i := uncompressedHeaderLength; i < archiveLength-xtea.BlockSize; i += xtea.BlockSize {
+    for i := uncompressedArchiveHeaderLength; i < archiveLength-xtea.BlockSize; i += xtea.BlockSize {
         cipher.Decrypt(copied[i:], bs[i:i+xtea.BlockSize])
     }
 

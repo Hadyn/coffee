@@ -145,11 +145,3 @@ func TestDecodeFileIndex(t *testing.T) {
         })
     }
 }
-
-func TestFileIndexLookupGroupID(t *testing.T) {
-    t.Fail()
-}
-
-func TestFileIndexLookupFileID(t *testing.T) {
-    t.Fail()
-}
