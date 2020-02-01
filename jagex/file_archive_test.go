@@ -15,17 +15,17 @@ func TestDecompressFileArchive(t *testing.T) {
         wantErrorMsg string
     }{
         {
-            name: "uncompressed",
+            name:      "uncompressed",
             giveBytes: loadBytes(t, "archive.none.dat"),
             wantBytes: []byte{1},
         },
         {
-            name: "bzip",
+            name:      "bzip",
             giveBytes: loadBytes(t, "archive.bzip.dat"),
             wantBytes: []byte("Hello World!"),
         },
         {
-            name: "gzip",
+            name:      "gzip",
             giveBytes: loadBytes(t, "archive.gzip.dat"),
             wantBytes: []byte("Hello World!"),
         },
@@ -34,9 +34,9 @@ func TestDecompressFileArchive(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             defer func() {
-               if r := recover(); r != nil {
-                   t.Fatal("call panicked when did not want panic")
-               }
+                if r := recover(); r != nil {
+                    t.Fatal("call panicked when did not want panic")
+                }
             }()
 
             decompressed, err := DecompressFileArchive(tt.giveBytes)
@@ -61,7 +61,7 @@ func TestDecryptFileArchive(t *testing.T) {
         wantErrorMsg string
     }{
         {
-            name:      "uncompressed aligned",
+            name: "uncompressed aligned",
             giveBytes: []byte{
                 ArchiveCompressionNone.AsByte(), 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0,
             },
@@ -73,7 +73,7 @@ func TestDecryptFileArchive(t *testing.T) {
             },
         },
         {
-            name:      "uncompressed unaligned",
+            name: "uncompressed unaligned",
             giveBytes: []byte{
                 ArchiveCompressionNone.AsByte(), 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             },
@@ -85,7 +85,7 @@ func TestDecryptFileArchive(t *testing.T) {
             },
         },
         {
-            name:      "uncompressed aligned trailer",
+            name: "uncompressed aligned trailer",
             giveBytes: []byte{
                 ArchiveCompressionNone.AsByte(), 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 1,
             },
@@ -126,60 +126,66 @@ func TestDecryptFileArchive(t *testing.T) {
 
 func TestFileArchiveLength(t *testing.T) {
     tests := []struct {
-        name       string
-        give       []byte
-        wantLength int
-        wantPanic  bool
+        name         string
+        give         []byte
+        wantLength   int
+        wantError    bool
+        wantErrorMsg string
     }{
         {
             name:       "uncompressed",
             give:       []byte{ArchiveCompressionNone.AsByte(), 0, 0, 0, 1, 1},
             wantLength: 6,
-            wantPanic:  false,
+            wantError:  false,
         },
         {
             name:       "bzip",
             give:       []byte{ArchiveCompressionBZIP.AsByte(), 0, 0, 0, 1, 0, 0, 0, 2, 1},
             wantLength: 10,
-            wantPanic:  false,
+            wantError:  false,
         },
         {
             name:       "gzip",
             give:       []byte{ArchiveCompressionGZIP.AsByte(), 0, 0, 0, 1, 0, 0, 0, 2, 1},
             wantLength: 10,
-            wantPanic:  false,
+            wantError:  false,
         },
         {
-            name:      "insufficient bytes uncompressed",
-            give:      []byte{ArchiveCompressionNone.AsByte(), 0, 0, 0,},
-            wantPanic: true,
+            name:         "insufficient bytes algorithm",
+            give:         []byte{},
+            wantError:    true,
+            wantErrorMsg: "insufficient bytes to read compression type; expected: 1, actual: 0",
         },
         {
-            name:      "insufficient bytes bzip",
-            give:      []byte{ArchiveCompressionBZIP.AsByte(), 0, 0, 0,},
-            wantPanic: true,
+            name:         "insufficient bytes length",
+            give:         []byte{ArchiveCompressionNone.AsByte(), 0, 0, 0},
+            wantError:    true,
+            wantErrorMsg: "insufficient bytes to read compressed length; expected: 4, actual: 3",
         },
         {
-            name:      "insufficient bytes gzip",
-            give:      []byte{ArchiveCompressionGZIP.AsByte(), 0, 0, 0,},
-            wantPanic: true,
-        },
-        {
-            name:      "unrecognized compression",
-            give:      []byte{255, 0, 0, 0, 1, 1},
-            wantPanic: true,
+            name:         "unrecognized compression",
+            give:         []byte{255, 0, 0, 0, 1, 1},
+            wantError:    true,
+            wantErrorMsg: "unrecognized compression: 255",
         },
     }
 
     for _, tt := range tests {
         t.Run(fmt.Sprintf("%s", tt.name), func(t *testing.T) {
             defer func() {
-                if r := recover(); r != nil && !tt.wantPanic {
+                if r := recover(); r != nil {
                     t.Fatal("call panicked when did not want panic")
                 }
             }()
 
-            assert.Equal(t, tt.wantLength, FileArchiveLength(tt.give))
+            length, err := FileArchiveLength(tt.give)
+
+            if tt.wantError {
+                assert.EqualError(t, err, tt.wantErrorMsg)
+            } else {
+                assert.NoError(t, err)
+                assert.Equal(t, tt.wantLength, length)
+            }
         })
     }
 }

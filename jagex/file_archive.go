@@ -3,14 +3,15 @@ package jagex
 import (
     "bytes"
     "compress/gzip"
-    "errors"
+    "fmt"
     "github.com/dsnet/compress/bzip2"
     "golang.org/x/crypto/xtea"
     "io"
 )
 
 const (
-    minimumArchiveHeaderLength = 5
+    uncompressedHeaderLength = 5
+    compressedHeaderLength   = 9
 )
 
 type ArchiveCompression byte
@@ -21,19 +22,21 @@ const (
     ArchiveCompressionGZIP
 )
 
-func (c ArchiveCompression) Validate() error {
-    if c < ArchiveCompressionNone || c > ArchiveCompressionGZIP {
-        return errors.New("unrecognized compression")
+func (c ArchiveCompression) Check() error {
+    switch c {
+    case ArchiveCompressionNone, ArchiveCompressionBZIP, ArchiveCompressionGZIP:
+        return nil
+    default:
+        return fmt.Errorf("unrecognized compression: %d", c)
     }
-    return nil
 }
 
 func (c ArchiveCompression) HeaderLength() int {
     switch c {
     case ArchiveCompressionNone:
-        return minimumArchiveHeaderLength
+        return uncompressedHeaderLength
     case ArchiveCompressionBZIP, ArchiveCompressionGZIP:
-        return minimumArchiveHeaderLength + 4
+        return compressedHeaderLength
     default:
         panic("unhandled compression enumeration")
     }
@@ -44,19 +47,49 @@ func (c ArchiveCompression) AsByte() byte { return byte(c) }
 func DecompressFileArchive(bs []byte) ([]byte, error) {
     rb := ReadBuffer(bs)
 
-    var (
-        c                = ArchiveCompression(rb.GetUint8())
-        headerLength     = c.HeaderLength()
-        compressedLength = rb.GetUint32AsInt()
-    )
+    if err := rb.CheckRemaining("insufficient bytes to read compression type", 1); err != nil {
+        return nil, err
+    }
+
+    c := ArchiveCompression(rb.GetUint8())
+    if err := c.Check(); err != nil {
+        return nil, err
+    }
+
+    if err := rb.CheckRemaining("insufficient bytes to read compressed length", 4); err != nil {
+        return nil, err
+    }
+
+    compressedLength := rb.GetUint32AsInt()
 
     switch c {
     case ArchiveCompressionNone:
+        if err := rb.CheckRemaining(
+            "insufficient bytes to read compressed contents",
+            compressedLength,
+        ); err != nil {
+            return nil, err
+        }
+
         copied := make([]byte, compressedLength)
-        copy(copied, bs[headerLength:headerLength+compressedLength])
+        copy(copied, rb.Get(compressedLength))
         return copied, nil
     case ArchiveCompressionBZIP, ArchiveCompressionGZIP:
+        if err := rb.CheckRemaining(
+            "insufficient bytes to read uncompressed length",
+            4,
+        ); err != nil {
+            return nil, err
+        }
+
         decompressed := make([]byte, rb.GetUint32())
+
+        if err := rb.CheckRemaining(
+            "insufficient bytes to read compressed contents",
+            compressedLength,
+        ); err != nil {
+            return nil, err
+        }
 
         var r io.Reader
         switch c {
@@ -65,7 +98,7 @@ func DecompressFileArchive(bs []byte) ([]byte, error) {
             r, err = bzip2.NewReader(
                 io.MultiReader(
                     bytes.NewReader([]byte("BZh9")),
-                    bytes.NewReader(bs[headerLength:headerLength+compressedLength]),
+                    bytes.NewReader(rb.Get(compressedLength)),
                 ),
                 &bzip2.ReaderConfig{},
             )
@@ -76,7 +109,7 @@ func DecompressFileArchive(bs []byte) ([]byte, error) {
         case ArchiveCompressionGZIP:
             var err error
             r, err = gzip.NewReader(
-                bytes.NewReader(bs[headerLength: headerLength+compressedLength]),
+                bytes.NewReader(rb.Get(compressedLength)),
             )
 
             if err != nil {
@@ -103,15 +136,33 @@ func DecryptFileArchive(bs []byte, key []byte) ([]byte, error) {
     copied := make([]byte, len(bs))
     copy(copied, bs)
 
-    archiveLength := FileArchiveLength(bs)
-    for i := minimumArchiveHeaderLength; i < archiveLength-xtea.BlockSize; i += xtea.BlockSize {
+    archiveLength, err := FileArchiveLength(bs)
+    if err != nil {
+        return nil, err
+    }
+
+    for i := uncompressedHeaderLength; i < archiveLength-xtea.BlockSize; i += xtea.BlockSize {
         cipher.Decrypt(copied[i:], bs[i:i+xtea.BlockSize])
     }
 
     return copied, nil
 }
 
-func FileArchiveLength(bs []byte) int {
+func FileArchiveLength(bs []byte) (int, error) {
     rb := ReadBuffer(bs)
-    return ArchiveCompression(rb.GetUint8()).HeaderLength() + rb.GetUint32AsInt()
+
+    if err := rb.CheckRemaining("insufficient bytes to read compression type", 1); err != nil {
+        return 0, err
+    }
+
+    c := ArchiveCompression(rb.GetUint8())
+    if err := c.Check(); err != nil {
+        return 0, err
+    }
+
+    if err := rb.CheckRemaining("insufficient bytes to read compressed length", 4); err != nil {
+        return 0, err
+    }
+
+    return c.HeaderLength() + rb.GetUint32AsInt(), nil
 }

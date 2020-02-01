@@ -1,5 +1,7 @@
 package jagex
 
+import "fmt"
+
 type ReadBuffer []byte
 
 func (rb *ReadBuffer) GetUint8() (val uint8) {
@@ -71,4 +73,15 @@ func (rb *ReadBuffer) Get(n int) (bs []byte) {
     bs = (*rb)[:n]
     *rb = (*rb)[n:]
     return
+}
+
+func (rb *ReadBuffer) Remaining() int {
+    return len(*rb)
+}
+
+func (rb *ReadBuffer) CheckRemaining(msg string, n int) error {
+    if rb.Remaining() < n {
+        return fmt.Errorf(fmt.Sprintf("%s; expected: %d, actual: %d", msg, n, rb.Remaining()))
+    }
+    return nil
 }

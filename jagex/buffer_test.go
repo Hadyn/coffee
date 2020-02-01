@@ -332,7 +332,7 @@ func TestReadBufferGetCString(t *testing.T) {
             wantLength: 1,
         },
         {
-            give:       []byte("Hello World"),
+            give:      []byte("Hello World"),
             wantPanic: true,
         },
     }
@@ -354,9 +354,9 @@ func TestReadBufferGetCString(t *testing.T) {
 
 func TestReadBufferGet(t *testing.T) {
     tests := []struct {
-        giveBytes []byte
-        giveN     int
-        wantValue []byte
+        giveBytes  []byte
+        giveN      int
+        wantValue  []byte
         wantLength int
         wantPanic  bool
     }{
@@ -373,8 +373,8 @@ func TestReadBufferGet(t *testing.T) {
             wantLength: 1,
         },
         {
-            giveBytes:  []byte{1},
-            giveN:      2,
+            giveBytes: []byte{1},
+            giveN:     2,
             wantPanic: true,
         },
     }
@@ -390,6 +390,44 @@ func TestReadBufferGet(t *testing.T) {
             rb := ReadBuffer(tt.giveBytes)
             assert.Equal(t, tt.wantValue, rb.Get(tt.giveN))
             assert.Equal(t, tt.wantLength, len(rb))
+        })
+    }
+}
+
+func TestReadBufferCheckRemaining(t *testing.T) {
+    tests := []struct {
+        giveBytes    []byte
+        giveMsg      string
+        giveN        int
+        wantError    bool
+        wantErrorMsg string
+    }{
+        {
+            giveBytes: []byte{0, 0},
+            giveMsg:   "catastrophic failure",
+            giveN:     2,
+            wantError: false,
+        },
+        {
+            giveBytes:    []byte{0, 0},
+            giveMsg:      "insufficient bytes",
+            giveN:        3,
+            wantError:    true,
+            wantErrorMsg: "insufficient bytes; expected: 3, actual: 2",
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(fmt.Sprintf("%v", tt.giveBytes), func(t *testing.T) {
+            rb := ReadBuffer(tt.giveBytes)
+
+            err := rb.CheckRemaining(tt.giveMsg, tt.giveN)
+
+            if tt.wantError {
+                assert.EqualError(t, err, tt.wantErrorMsg)
+            } else {
+                assert.NoError(t, err)
+            }
         })
     }
 }
