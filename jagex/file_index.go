@@ -171,13 +171,13 @@ func (fi *FileIndex) LookupFileID(groupName, fileName string) (groupID int, file
 	return
 }
 
-func (ge *FileGroupEntry) LookupFileID(fileName string) (fileID int, found bool) {
+func (e *FileGroupEntry) LookupFileID(fileName string) (fileID int, found bool) {
 	var (
-		file *FileGroupEntry
+		file *FileEntry
 		hash = dbj2.Sum([]byte(fileName))
 	)
 
-	for fileID, file = range ge.Files {
+	for fileID, file = range e.Files {
 		if file.NameHash == hash {
 			found = true
 			return
