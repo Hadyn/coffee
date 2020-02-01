@@ -1,6 +1,8 @@
 package jagex
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type FileIndexFlags uint8
 

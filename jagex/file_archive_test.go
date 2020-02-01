@@ -16,23 +16,29 @@ func TestDecompressFileArchive(t *testing.T) {
     }{
         {
             name: "uncompressed",
-            giveBytes: []byte{},
-            wantBytes: []byte{},
+            giveBytes: loadBytes(t, "archive.none.dat"),
+            wantBytes: []byte{1},
         },
         {
             name: "bzip",
-            giveBytes: []byte{},
-            wantBytes: []byte{},
+            giveBytes: loadBytes(t, "archive.bzip.dat"),
+            wantBytes: []byte("Hello World!"),
         },
         {
             name: "gzip",
-            giveBytes: []byte{},
-            wantBytes: []byte{},
+            giveBytes: loadBytes(t, "archive.gzip.dat"),
+            wantBytes: []byte("Hello World!"),
         },
     }
 
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
+            defer func() {
+               if r := recover(); r != nil {
+                   t.Fatal("call panicked when did not want panic")
+               }
+            }()
+
             decompressed, err := DecompressFileArchive(tt.giveBytes)
 
             if tt.wantError {
