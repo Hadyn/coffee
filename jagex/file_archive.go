@@ -112,7 +112,7 @@ func DecryptFileArchive(bs []byte, key []byte) ([]byte, error) {
         return nil, err
     }
 
-    for i := uncompressedArchiveHeaderLength; i < archiveLength-xtea.BlockSize; i += xtea.BlockSize {
+    for i := uncompressedArchiveHeaderLength; i < archiveLength-xtea.BlockSize+1; i += xtea.BlockSize {
         cipher.Decrypt(copied[i:], bs[i:i+xtea.BlockSize])
     }
 
