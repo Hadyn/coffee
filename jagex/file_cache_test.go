@@ -12,8 +12,8 @@ func TestCacheReaderGet(t *testing.T) {
         name         string
         withLookup   io.ReadSeeker
         withBlocks   io.ReadSeeker
-        withFileType uint8
-        giveID       uint16
+        withFileType int
+        giveID       int
         wantBytes    []byte
         wantError    bool
         wantErrorMsg string
@@ -83,7 +83,7 @@ func TestCacheReaderGet(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             fc := NewCacheReader(tt.withLookup, tt.withBlocks, tt.withFileType)
-            bs, err := fc.Get(tt.giveID)
+            bs, err := fc.Read(tt.giveID)
 
             if tt.wantError {
                 assert.EqualError(t, err, tt.wantErrorMsg)
