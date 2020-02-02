@@ -33,7 +33,10 @@ func Execute() {
         blocksFlagUsage,
     )
 
+    archiveCmd.AddCommand(archiveDecompressCmd)
+
     rootCmd.AddCommand(cacheCmd)
+    rootCmd.AddCommand(archiveCmd)
 
     if err := rootCmd.Execute(); err != nil {
         fmt.Println(err)
