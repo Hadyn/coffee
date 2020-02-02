@@ -89,7 +89,7 @@ var cacheReadCmd = &cobra.Command{
 
 func openIndexFile(flag int, perm os.FileMode) (file *os.File, err error) {
     if indexFilePath == "" {
-        return nil, errors.New("cache index file path was not set")
+        return nil, errors.New("index file path was not set")
     }
     file, err = os.OpenFile(indexFilePath, flag, perm)
     return
@@ -97,7 +97,7 @@ func openIndexFile(flag int, perm os.FileMode) (file *os.File, err error) {
 
 func openBlocksFile(flag int, perm os.FileMode) (file *os.File, err error) {
     if blocksFilePath == "" {
-        return nil, errors.New("cache blocks file path was not set")
+        return nil, errors.New("blocks file path was not set")
     }
     file, err = os.OpenFile(blocksFilePath, flag, perm)
     return
