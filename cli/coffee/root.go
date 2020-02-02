@@ -22,9 +22,7 @@ func Execute() {
         &indexFilePath,
         "index",
         "",
-        `The index file which is used to quickly lookup a file's length and starting block. The file
-is typically named "main_file_cache.idx{type}" where type corresponds to the type of file
-that the index was built for.`,
+        indexFlagUsage,
     )
     _ = cacheCmd.MarkPersistentFlagRequired("index")
 
@@ -32,7 +30,7 @@ that the index was built for.`,
         &blocksFilePath,
         "blocks",
         "main_file_cache.dat2",
-        `The blocks file which contains the data for all of the files contained within the cache.`,
+        blocksFlagUsage,
     )
 
     rootCmd.AddCommand(cacheCmd)

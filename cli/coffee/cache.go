@@ -14,6 +14,13 @@ var (
     blocksFilePath string
 )
 
+var indexFlagUsage = `The index file which is used to quickly lookup a file's length and starting block.
+The file is typically named "main_file_cache.idx{type}" where type corresponds to the type of file
+that the index was built for.`
+
+var blocksFlagUsage = `The blocks file which contains the data for all of the files contained within
+the cache.`
+
 var cacheCmd = &cobra.Command{
     Use:   "cache",
     Short: "Root for cache editing commands",
@@ -23,7 +30,6 @@ var cacheCmd = &cobra.Command{
         _ = cmd.Help()
     },
 }
-
 
 var cacheReadCmd = &cobra.Command{
     Use:   "read <file-type> <file-id>",
