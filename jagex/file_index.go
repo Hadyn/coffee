@@ -158,6 +158,10 @@ func (fi *FileIndex) FindGroupID(groupName string) (groupID int, found bool) {
     )
 
     for groupID, group = range fi.Groups {
+        if group == nil {
+            continue
+        }
+
         if group.NameHash == hash {
             found = true
             return

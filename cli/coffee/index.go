@@ -3,6 +3,7 @@ package coffee
 import (
     "bufio"
     "encoding/json"
+    "fmt"
     "github.com/hadyn/coffee/jagex"
     "github.com/spf13/cobra"
     "io/ioutil"
@@ -19,7 +20,7 @@ var indexCmd = &cobra.Command{
     },
 }
 
-var indexDecode = &cobra.Command{
+var indexDecodeCmd = &cobra.Command{
     Use:   "decode",
     Short: "Decodes a file index into an output type",
     Long:  ``,
@@ -51,5 +52,37 @@ var indexDecode = &cobra.Command{
         _, err = fw.Write(enc)
 
         return nil
+    },
+}
+
+var indexLookupCmd = &cobra.Command{
+    Use:   "lookup <name>",
+    Short: "Looks up the identifier of a group for the provided name",
+    Long:  ``,
+
+    RunE: func(cmd *cobra.Command, args []string) (err error) {
+        var (
+            bs  []byte
+            fi  *jagex.FileIndex
+        )
+
+        bs, err = ioutil.ReadAll(os.Stdin)
+        if err != nil {
+            return
+        }
+
+        fi, err = jagex.DecodeFileIndex(bs)
+        if err != nil {
+            return
+        }
+
+        id, found := fi.FindGroupID(args[0])
+        if !found {
+            fmt.Println("-1")
+            return
+        }
+
+        fmt.Printf("%d\n", id)
+        return
     },
 }

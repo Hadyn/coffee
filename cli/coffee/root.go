@@ -35,7 +35,8 @@ func Execute() {
 
     archiveCmd.AddCommand(archiveDecompressCmd)
 
-    indexCmd.AddCommand(indexDecode)
+    indexCmd.AddCommand(indexDecodeCmd)
+    indexCmd.AddCommand(indexLookupCmd)
 
     rootCmd.AddCommand(cacheCmd)
     rootCmd.AddCommand(archiveCmd)
