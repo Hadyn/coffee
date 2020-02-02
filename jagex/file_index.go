@@ -17,19 +17,19 @@ const (
 )
 
 type FileIndex struct {
-    Revision uint32
-    Groups   []*FileGroupEntry
+    Revision uint32            `json:"revision"`
+    Groups   []*FileGroupEntry `json:"groups"`
 }
 
 type FileGroupEntry struct {
-    NameHash uint32
-    Checksum uint32
-    Revision uint16
-    Files    []*FileEntry
+    NameHash uint32       `json:"name"`
+    Checksum uint32       `json:"checksum"`
+    Revision uint32       `json:"revision"`
+    Files    []*FileEntry `json:"files"`
 }
 
 type FileEntry struct {
-    NameHash uint32
+    NameHash uint32 `json:"name"`
 }
 
 type NamedEntryIndex struct {
@@ -90,7 +90,7 @@ func DecodeFileIndex(bs []byte) (*FileIndex, error) {
 
     for _, groupID := range groupIDs {
         group := fi.Groups[groupID]
-        group.Revision = rb.GetUint16()
+        group.Revision = rb.GetUint32()
     }
 
     var (

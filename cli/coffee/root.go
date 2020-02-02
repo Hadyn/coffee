@@ -35,8 +35,11 @@ func Execute() {
 
     archiveCmd.AddCommand(archiveDecompressCmd)
 
+    indexCmd.AddCommand(indexDecode)
+
     rootCmd.AddCommand(cacheCmd)
     rootCmd.AddCommand(archiveCmd)
+    rootCmd.AddCommand(indexCmd)
 
     if err := rootCmd.Execute(); err != nil {
         fmt.Println(err)
