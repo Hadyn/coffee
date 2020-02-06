@@ -10,7 +10,7 @@ import (
 
 var archiveCmd = &cobra.Command{
     Use:   "archive",
-    Short: "Root for archive editing commands",
+    Short: "Archive editing commands",
     Long:  ``,
 
     Run: func(cmd *cobra.Command, args []string) {
@@ -20,28 +20,28 @@ var archiveCmd = &cobra.Command{
 
 var archiveDecompressCmd = &cobra.Command{
     Use:   "decompress",
-    Short: "Decompresses an archive read in from stdin",
+    Short: "Decompresses an archive",
     Long:  ``,
     RunE: func(cmd *cobra.Command, args []string) (err error) {
         var (
-            bs []byte
-            d  []byte
+            in  []byte
+            out []byte
         )
 
-        bs, err = ioutil.ReadAll(os.Stdin)
+        in, err = ioutil.ReadAll(os.Stdin)
         if err != nil {
             return
         }
 
-        d, err = jagex.DecompressFileArchive(bs)
+        out, err = jagex.DecompressFileArchive(in)
         if err != nil {
             return
         }
 
-        fw := bufio.NewWriter(os.Stdout)
-        defer fw.Flush()
+        w := bufio.NewWriter(os.Stdout)
+        defer w.Flush()
 
-        _, err = fw.Write(d)
+        _, err = w.Write(out)
         return
     },
 }

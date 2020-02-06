@@ -14,16 +14,18 @@ var (
     blocksFilePath string
 )
 
-var indexFlagUsage = `The index file which is used to quickly lookup a file's length and starting block.
+var (
+    indexFlagUsage = `The index file which is used to quickly lookup a file's length and starting block.
 The file is typically named "main_file_cache.idx{type}" where type corresponds to the type of file
 that the index was built for.`
 
-var blocksFlagUsage = `The blocks file which contains the data for all of the files contained within
+    blocksFlagUsage = `The blocks file which contains the data for all of the files contained within
 the cache.`
+)
 
 var cacheCmd = &cobra.Command{
     Use:   "cache",
-    Short: "Root for cache editing commands",
+    Short: "Cache editing commands",
     Long:  ``,
 
     Run: func(cmd *cobra.Command, args []string) {
@@ -34,8 +36,8 @@ var cacheCmd = &cobra.Command{
 var cacheReadCmd = &cobra.Command{
     Use:   "read <file-type> <file-id>",
     Short: "Reads a file from a cache",
-    Long: ``,
-    Args: cobra.ExactArgs(2),
+    Long:  ``,
+    Args:  cobra.ExactArgs(2),
     RunE: func(cmd *cobra.Command, args []string) (err error) {
         var (
             fileType int
@@ -71,10 +73,10 @@ var cacheReadCmd = &cobra.Command{
 
         defer blocks.Close()
 
-        r := jagex.NewCacheReader(index, blocks, fileType)
+        cr := jagex.NewCacheReader(index, blocks, fileType)
 
-        var file []byte
-        file, err = r.Read(fileID)
+        var out []byte
+        out, err = cr.Read(fileID)
         if err != nil {
             return
         }
@@ -82,7 +84,7 @@ var cacheReadCmd = &cobra.Command{
         fw := bufio.NewWriter(os.Stdout)
         defer fw.Flush()
 
-        _, err = fw.Write(file)
+        _, err = fw.Write(out)
         return
     },
 }

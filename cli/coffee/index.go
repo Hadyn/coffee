@@ -12,7 +12,7 @@ import (
 
 var indexCmd = &cobra.Command{
     Use:   "index",
-    Short: "Root for file index editing commands",
+    Short: "Index editing commands",
     Long:  ``,
 
     Run: func(cmd *cobra.Command, args []string) {
@@ -27,29 +27,29 @@ var indexDecodeCmd = &cobra.Command{
 
     RunE: func(cmd *cobra.Command, args []string) (err error) {
         var (
-            bs  []byte
+            in []byte
             fi  *jagex.FileIndex
-            enc []byte
+            out []byte
         )
 
-        bs, err = ioutil.ReadAll(os.Stdin)
+        in, err = ioutil.ReadAll(os.Stdin)
         if err != nil {
             return
         }
 
-        fi, err = jagex.DecodeFileIndex(bs)
+        fi, err = jagex.DecodeFileIndex(in)
         if err != nil {
             return
         }
 
-        if enc, err = json.Marshal(fi); err != nil {
+        if out, err = json.Marshal(fi); err != nil {
             return
         }
 
         fw := bufio.NewWriter(os.Stdout)
         defer fw.Flush()
 
-        _, err = fw.Write(enc)
+        _, err = fw.Write(out)
 
         return nil
     },
@@ -57,21 +57,21 @@ var indexDecodeCmd = &cobra.Command{
 
 var indexLookupCmd = &cobra.Command{
     Use:   "lookup <name>",
-    Short: "Looks up the identifier of a group for the provided name",
+    Short: "Looks up a group id for a provided name",
     Long:  ``,
 
     RunE: func(cmd *cobra.Command, args []string) (err error) {
         var (
-            bs  []byte
-            fi  *jagex.FileIndex
+            in []byte
+            fi *jagex.FileIndex
         )
 
-        bs, err = ioutil.ReadAll(os.Stdin)
+        in, err = ioutil.ReadAll(os.Stdin)
         if err != nil {
             return
         }
 
-        fi, err = jagex.DecodeFileIndex(bs)
+        fi, err = jagex.DecodeFileIndex(in)
         if err != nil {
             return
         }
