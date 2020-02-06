@@ -7,7 +7,9 @@ A Runescape file editing library for Go
 ## Installing
 
 ```bash
-go install && coffee --version
+git clone https://github.com/hadyn/coffee
+cd coffee
+go test ./... && go install
 ```
 
 ## Examples
