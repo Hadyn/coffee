@@ -5,14 +5,19 @@ type MultipartFile struct {
 }
 
 func (f *MultipartFile) Collapse() []byte {
-    collapsed := make([]byte, 0, f.Length())
+    if len(f.Parts) <= 1 {
+        return f.Parts[0]
+    }
+
+    collapsed := make([]byte, 0, f.CollapsedLength())
     for _, bs := range f.Parts {
         collapsed = append(collapsed, bs...)
     }
+
     return collapsed
 }
 
-func (f *MultipartFile) Length() (length int) {
+func (f *MultipartFile) CollapsedLength() (length int) {
     for _, bs := range f.Parts {
         length += len(bs)
     }
@@ -20,7 +25,11 @@ func (f *MultipartFile) Length() (length int) {
 }
 
 func DecodeFileGroup(bs []byte, size int) []*MultipartFile {
-    if size < 2 {
+    if size == 0 {
+        return []*MultipartFile{}
+    }
+
+    if size == 1 {
         copied := make([]byte, len(bs))
         copy(copied, bs)
 
@@ -31,13 +40,16 @@ func DecodeFileGroup(bs []byte, size int) []*MultipartFile {
 
     var (
         parts         = rb.GetUint8AsInt()
-        lengthsOffset = len(bs) - 4*parts - 1
+        lengthsOffset = len(bs) - 4*parts*size - 1
         lengths       = make([][]int, size)
     )
 
     rb = bs[lengthsOffset : len(bs)-1]
     for part := 0; part < parts; part++ {
         for fileID := 0; fileID < size; fileID++ {
+            if lengths[fileID] == nil {
+                lengths[fileID] = make([]int, parts)
+            }
             lengths[fileID][part] = rb.GetUint32AsInt()
         }
     }
@@ -45,12 +57,13 @@ func DecodeFileGroup(bs []byte, size int) []*MultipartFile {
     rb = bs[0:lengthsOffset]
 
     files := make([]*MultipartFile, size)
-    for fileID := 0; fileID < size; fileID++ {
-        file := &MultipartFile{Parts: make([][]byte, parts)}
-        for part := 0; part < parts; part++ {
-            file.Parts[part] = rb.GetCopy(lengths[fileID][part])
+    for part := 0; part < parts; part++ {
+        for fileID := 0; fileID < size; fileID++ {
+            if files[fileID] == nil {
+                files[fileID] = &MultipartFile{Parts: make([][]byte, parts)}
+            }
+            files[fileID].Parts[part] = rb.GetCopy(lengths[fileID][part])
         }
-        files[fileID] = file
     }
 
     return files
