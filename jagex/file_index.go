@@ -219,6 +219,14 @@ func (fi *FileIndex) NamedIndex() *NamedEntryIndex {
     return index
 }
 
+func (e *FileGroupEntry) FileIDs() []int {
+    ids := make([]int, e.Size())
+    for fileID, _ := range e.Files {
+        ids = append(ids, fileID)
+    }
+    return ids
+}
+
 func (e *FileGroupEntry) Size() (size int) {
     for _, file := range e.Files {
         if file == nil {

@@ -73,6 +73,14 @@ func (rb *ReadBuffer) Get(n int) (bs []byte) {
     return
 }
 
+func (rb *ReadBuffer) GetCopy(n int) []byte {
+    _ = (*rb)[n-1]
+    copied := make([]byte, n)
+    copy(copied, (*rb)[:n])
+    *rb = (*rb)[n:]
+    return copied
+}
+
 func (rb *ReadBuffer) Remaining() int {
     return len(*rb)
 }
