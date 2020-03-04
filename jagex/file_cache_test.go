@@ -52,13 +52,13 @@ func TestCacheReaderGet(t *testing.T) {
             wantErrorMsg: "file identifier mismatch; expected: 1, found: 2",
         },
         {
-            name:         "nonce mismatch",
-            withLookup:   bytes.NewReader(loadBytes(t, "cache/lookup.bad-nonce.dat")),
-            withBlocks:   bytes.NewReader(loadBytes(t, "cache/blocks.bad-nonce.dat")),
+            name:         "chunk mismatch",
+            withLookup:   bytes.NewReader(loadBytes(t, "cache/lookup.bad-chunk.dat")),
+            withBlocks:   bytes.NewReader(loadBytes(t, "cache/blocks.bad-chunk.dat")),
             withFileType: 1,
             giveID:       1,
             wantError:    true,
-            wantErrorMsg: "file nonce mismatch; expected: 1, found: 2",
+            wantErrorMsg: "file chunk mismatch; expected: 1, found: 2",
         },
         {
             name:         "file type mismatch",

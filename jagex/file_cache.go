@@ -36,11 +36,11 @@ func (r *CacheReader) Read(fileID int) ([]byte, error) {
 
     var (
         file  = make([]byte, fd.length)
-        nonce = uint16(0)
+        chunk = uint16(0)
         bid   = fd.start
     )
 
-    for offset := uint32(0); offset < fd.length; nonce++ {
+    for offset := uint32(0); offset < fd.length; chunk++ {
         if bid == cacheBlockEOF {
             return nil, fmt.Errorf(
                 "reached unexpected EOF; write-offset: %d, file-length: %d", offset, fd.length,
@@ -58,9 +58,9 @@ func (r *CacheReader) Read(fileID int) ([]byte, error) {
             )
         }
 
-        if block.nonce != nonce {
+        if block.chunk != chunk {
             return nil, fmt.Errorf(
-                "file nonce mismatch; expected: %d, found: %d", nonce, block.nonce,
+                "file chunk mismatch; expected: %d, found: %d", chunk, block.chunk,
             )
         }
 
@@ -113,7 +113,7 @@ func (r *CacheReader) readFileDescriptor(fileID int) (desc fileDescriptor, err e
 
 type cacheBlock struct {
     fid   uint16
-    nonce uint16
+    chunk uint16
     bid   uint32
     ft    uint8
     data  []byte
@@ -132,7 +132,7 @@ func (r *CacheReader) readBlock(blockID uint32) (block cacheBlock, err error) {
 
     return cacheBlock{
         fid:   rb.GetUint16(),
-        nonce: rb.GetUint16(),
+        chunk: rb.GetUint16(),
         bid:   rb.GetUint24(),
         ft:    rb.GetUint8(),
         data:  r.buf[cacheBlockHeaderLength:],

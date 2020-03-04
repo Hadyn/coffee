@@ -12,12 +12,12 @@ func TestMultipartFileCollapse(t *testing.T) {
         wantBytes []byte
     }{
         {
-            name:      "single part",
+            name:      "single chunk",
             withFile:  &MultipartFile{Parts: [][]byte{{0, 1, 2, 3, 4, 5}}},
             wantBytes: []byte{0, 1, 2, 3, 4, 5},
         },
         {
-            name:      "multi part",
+            name:      "multi chunk",
             withFile:  &MultipartFile{Parts: [][]byte{{0, 1, 2, 3, 4, 5}, {6, 7, 8, 9}}},
             wantBytes: []byte{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
         },
@@ -47,7 +47,7 @@ func TestDecodeFileGroup(t *testing.T) {
             },
         },
         {
-            name:      "multiple files single part",
+            name:      "multiple files single chunk",
             giveBytes: []byte{1, 2, 3, 0, 0, 0, 1, 0, 0, 0, 2, 1},
             giveSize:  2,
             wantFiles: []*MultipartFile{
