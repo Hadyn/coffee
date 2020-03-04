@@ -4,6 +4,11 @@ import (
     "hash"
 )
 
+const (
+    DBJ32Size = 4
+    DBJ32BlockSize = 1
+)
+
 type dbj32 uint32
 
 func New() hash.Hash32 {
@@ -16,9 +21,6 @@ func Sum(b []byte) uint32 {
     _, _ = h.Write(b)
     return h.Sum32()
 }
-
-func (d dbj32) Size() int      { return 4 }
-func (d dbj32) BlockSize() int { return 1 }
 
 func (d *dbj32) Write(data []byte) (n int, err error) {
     v := *d
