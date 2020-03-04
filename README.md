@@ -24,7 +24,6 @@ coffee cache read --index main_file_cache.idx255 \
 coffee cache read --index main_file_cache.idx255  --blocks main_file_cache.dat2 255 5 | \ 
 coffee archive decompress > manifest.maps.d.dat
 
-
 # Read the map manifest from the cache, decompress it, decode it, write to JSON file.
 coffee cache read --index main_file_cache.idx255  --blocks main_file_cache.dat2 255 5 | \ 
 coffee archive decompress | \
