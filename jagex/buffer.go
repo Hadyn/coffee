@@ -73,7 +73,7 @@ func (rb *ReadBuffer) Get(n int) (bs []byte) {
     return
 }
 
-func (rb *ReadBuffer) GetCopy(n int) []byte {
+func (rb *ReadBuffer) Copy(n int) []byte {
     if n == 0 {
         return []byte{}
     }

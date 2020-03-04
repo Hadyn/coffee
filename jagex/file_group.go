@@ -62,7 +62,7 @@ func DecodeFileGroup(bs []byte, size int) []*MultipartFile {
             if files[fileID] == nil {
                 files[fileID] = &MultipartFile{Parts: make([][]byte, parts)}
             }
-            files[fileID].Parts[part] = rb.GetCopy(lengths[fileID][part])
+            files[fileID].Parts[part] = rb.Copy(lengths[fileID][part])
         }
     }
 
