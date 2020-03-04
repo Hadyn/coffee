@@ -1,5 +1,6 @@
 # coffee
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/hadyn/coffee)](https://goreportcard.com/report/github.com/hadyn/coffee)
 ![alt text](https://travis-ci.com/Hadyn/coffee.svg?branch=master "Build Status")
 
 A Runescape file editing library for Go
