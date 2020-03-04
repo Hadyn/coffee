@@ -1,6 +1,13 @@
 package jagex
 
+// ReadBuffer provides reading of various binary types from byte slice. After reading a value,
+// the underlying slice will be resliced so that unread bytes are next to be read.
 type ReadBuffer []byte
+
+// Remaining is an alias for the length of the underlying slice.
+func (rb *ReadBuffer) Remaining() int {
+    return len(*rb)
+}
 
 func (rb *ReadBuffer) GetUint8() (val uint8) {
     _ = (*rb)[0]
@@ -54,6 +61,8 @@ func (rb *ReadBuffer) GetUint64() (val uint64) {
     return
 }
 
+// GetCString returns a null terminated string.
+// TODO(hadyn): Runescape uses a specific character set, need to implement that.
 func (rb *ReadBuffer) GetCString() (s string) {
     start, pos := 0, 0
     for (*rb)[pos] != 0 {
@@ -66,6 +75,9 @@ func (rb *ReadBuffer) GetCString() (s string) {
     return
 }
 
+// Get returns a slice of the next N bytes and reslices the underlying buffer to be a view of the
+// bytes after the read bytes. This method should be carefully used because changes to the
+// elements in the returned slice will appear in this buffer and elsewhere.
 func (rb *ReadBuffer) Get(n int) (bs []byte) {
     _ = (*rb)[n-1]
     bs = (*rb)[:n]
@@ -73,6 +85,9 @@ func (rb *ReadBuffer) Get(n int) (bs []byte) {
     return
 }
 
+// Get returns a copy of the next n bytes and reslices the underlying buffer to be a view of
+// the bytes there after. This method is similar to Get except it returns a copy of the bytes
+// which makes it safe to do modifications to the elements.
 func (rb *ReadBuffer) Copy(n int) []byte {
     if n == 0 {
         return []byte{}
@@ -83,8 +98,4 @@ func (rb *ReadBuffer) Copy(n int) []byte {
     copy(copied, (*rb)[:n])
     *rb = (*rb)[n:]
     return copied
-}
-
-func (rb *ReadBuffer) Remaining() int {
-    return len(*rb)
 }
