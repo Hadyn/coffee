@@ -16,12 +16,10 @@ func TestDBJ2Sum(t *testing.T) {
 			giveBytes: []byte{},
 			wantSum:   0,
 		},
-
 		{
 			giveBytes: []byte("Hello, World!"),
 			wantSum:   1498789909,
 		},
-
 		{
 			giveBytes: []byte("123456789"),
 			wantSum:   2427588661,
