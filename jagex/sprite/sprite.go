@@ -40,7 +40,7 @@ func (s *Sprite) ToImage() image.Image {
     for x := s.OffsetX; x < s.OffsetX+s.PackedWidth; x++ {
         for y := s.OffsetY; y < s.OffsetY+s.PackedHeight; y++ {
             var (
-                src   = s.Colors[s.Index[x+y*s.PackedHeight]]
+                src   = s.Colors[s.Index[x+y*s.PackedWidth]]
                 pixel color.RGBA
             )
 
