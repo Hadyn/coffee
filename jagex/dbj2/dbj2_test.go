@@ -2,8 +2,9 @@ package dbj2
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDBJ2Sum(t *testing.T) {
@@ -14,6 +15,16 @@ func TestDBJ2Sum(t *testing.T) {
 		{
 			giveBytes: []byte{},
 			wantSum:   0,
+		},
+
+		{
+			giveBytes: []byte("Hello, World!"),
+			wantSum:   1498789909,
+		},
+
+		{
+			giveBytes: []byte("123456789"),
+			wantSum:   2427588661,
 		},
 	}
 
