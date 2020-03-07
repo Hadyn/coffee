@@ -3,6 +3,8 @@ package sprite
 import (
     "fmt"
     "github.com/hadyn/coffee/jagex"
+    "image"
+    "image/color"
 )
 
 type PixelEncoding uint8
@@ -11,6 +13,46 @@ const (
     HorizontalEncoding PixelEncoding = 0
     VerticalEncoding   PixelEncoding = 1
 )
+
+type Sprite struct {
+    Width        int
+    Height       int
+    OffsetX      int
+    OffsetY      int
+    PackedWidth  int
+    PackedHeight int
+    Colors       []uint32
+    Index        []uint8
+}
+
+func (s *Sprite) ToImage() image.Image {
+    img := image.NewRGBA(image.Rect(
+        s.OffsetX,
+        s.OffsetY,
+        s.OffsetX+s.PackedWidth,
+        s.OffsetY+s.PackedHeight,
+    ))
+
+    for x := s.OffsetX; x < s.OffsetX+s.PackedWidth; x++ {
+        for y := s.OffsetY; y < s.OffsetY+s.PackedHeight; y++ {
+            var (
+                src   = s.Colors[s.Index[x+y*s.PackedHeight]]
+                pixel color.RGBA
+            )
+
+            if src != 0x000000 {
+                pixel.R = uint8(src >> 16 & 0xff)
+                pixel.G = uint8(src >> 8 & 0xff)
+                pixel.B = uint8(src & 0xff)
+                pixel.A = 0xff
+            }
+
+            img.Set(x, y, pixel)
+        }
+    }
+
+    return img
+}
 
 type Sheet struct {
     Width        int
