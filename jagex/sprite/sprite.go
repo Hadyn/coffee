@@ -7,6 +7,10 @@ import (
     "image/color"
 )
 
+const (
+    TransparentPixel uint32 = 0x000000
+)
+
 type PixelEncoding uint8
 
 const (
@@ -40,7 +44,7 @@ func (s *Sprite) ToImage() image.Image {
                 pixel color.RGBA
             )
 
-            if src != 0x000000 {
+            if src != TransparentPixel {
                 pixel.R = uint8(src >> 16 & 0xff)
                 pixel.G = uint8(src >> 8 & 0xff)
                 pixel.B = uint8(src & 0xff)
@@ -104,8 +108,8 @@ func DecodeSheet(bs []byte) *Sheet {
     for i := 1; i < len(sheet.Colors); i++ {
         sheet.Colors[i] = rb.GetUint24()
 
-        if sheet.Colors[i] == 0x000000 {
-            sheet.Colors[i] = 0x000001
+        if sheet.Colors[i] == TransparentPixel {
+            sheet.Colors[i] = 1
         }
     }
 
