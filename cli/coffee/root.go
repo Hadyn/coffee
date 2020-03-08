@@ -43,7 +43,7 @@ func Execute() {
 		"format",
 		"f",
 		"png",
-		"",
+		"the image format to output the decoded sprites as",
 	)
 
 	spriteCmd.AddCommand(spriteDecodeCmd)

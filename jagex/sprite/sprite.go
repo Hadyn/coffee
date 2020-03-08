@@ -45,9 +45,7 @@ func (s *Sprite) ToImage() image.Image {
             )
 
             if src != TransparentPixel {
-                pixel.R = uint8(src >> 16 & 0xff)
-                pixel.G = uint8(src >> 8 & 0xff)
-                pixel.B = uint8(src & 0xff)
+                pixel.R, pixel.G, pixel.B = uint8(src >> 16 & 0xff), uint8(src >> 8 & 0xff), uint8(src & 0xff)
                 pixel.A = 0xff
             }
 

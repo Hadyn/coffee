@@ -28,7 +28,7 @@ var (
 )
 
 var spriteDecodeCmd = &cobra.Command{
-    Use:   "decode",
+    Use:   "decode [n]",
     Short: "Decode a sprite group and output a single sprite",
     Long:  ``,
     RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -53,7 +53,7 @@ var spriteDecodeCmd = &cobra.Command{
 
         var (
             group = sprite.DecodeGroup(in)
-            frame = group.Get(n)
+            child = group.Get(n)
         )
 
         w := bufio.NewWriter(os.Stdout)
@@ -61,11 +61,11 @@ var spriteDecodeCmd = &cobra.Command{
 
         switch spriteDecodeFormat {
         case "png":
-            err = png.Encode(w, frame.ToImage())
+            err = png.Encode(w, child.ToImage())
         case "jpeg":
-            err = jpeg.Encode(w, frame.ToImage(), nil)
+            err = jpeg.Encode(w, child.ToImage(), nil)
         case "gif":
-            err = gif.Encode(w, frame.ToImage(), nil)
+            err = gif.Encode(w, child.ToImage(), nil)
         }
 
         return
