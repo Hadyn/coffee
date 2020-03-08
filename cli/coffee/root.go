@@ -38,9 +38,20 @@ func Execute() {
 	indexCmd.AddCommand(indexDecodeCmd)
 	indexCmd.AddCommand(indexLookupCmd)
 
+	spriteDecodeCmd.PersistentFlags().StringVarP(
+		&spriteDecodeFormat,
+		"format",
+		"f",
+		"png",
+		"",
+	)
+
+	spriteCmd.AddCommand(spriteDecodeCmd)
+
 	rootCmd.AddCommand(cacheCmd)
 	rootCmd.AddCommand(archiveCmd)
 	rootCmd.AddCommand(indexCmd)
+	rootCmd.AddCommand(spriteCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

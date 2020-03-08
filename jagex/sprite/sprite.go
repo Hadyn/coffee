@@ -37,8 +37,8 @@ func (s *Sprite) ToImage() image.Image {
         s.OffsetY+s.PackedHeight,
     ))
 
-    for x := s.OffsetX; x < s.OffsetX+s.PackedWidth; x++ {
-        for y := s.OffsetY; y < s.OffsetY+s.PackedHeight; y++ {
+    for x := 0; x < s.PackedWidth; x++ {
+        for y := 0; y < s.PackedHeight; y++ {
             var (
                 src   = s.Colors[s.Index[x+y*s.PackedWidth]]
                 pixel color.RGBA
@@ -51,14 +51,14 @@ func (s *Sprite) ToImage() image.Image {
                 pixel.A = 0xff
             }
 
-            img.Set(x, y, pixel)
+            img.Set(x+s.OffsetX, y+s.OffsetY, pixel)
         }
     }
 
     return img
 }
 
-type Sheet struct {
+type Group struct {
     Width        int
     Height       int
     OffsetX      []int
@@ -69,14 +69,14 @@ type Sheet struct {
     Index        [][]uint8
 }
 
-func DecodeSheet(bs []byte) *Sheet {
+func DecodeGroup(bs []byte) *Group {
     rb := jagex.ReadBuffer(bs[len(bs)-2:])
 
     count := rb.GetUint16AsInt()
 
     rb = bs[len(bs)-7-count*8:]
 
-    sheet := &Sheet{
+    group := &Group{
         Width:        rb.GetUint16AsInt(),
         Height:       rb.GetUint16AsInt(),
         OffsetX:      make([]int, count),
@@ -88,50 +88,50 @@ func DecodeSheet(bs []byte) *Sheet {
     }
 
     for i := 0; i < count; i++ {
-        sheet.OffsetX[i] = rb.GetUint16AsInt()
+        group.OffsetX[i] = rb.GetUint16AsInt()
     }
 
     for i := 0; i < count; i++ {
-        sheet.OffsetY[i] = rb.GetUint16AsInt()
+        group.OffsetY[i] = rb.GetUint16AsInt()
     }
 
     for i := 0; i < count; i++ {
-        sheet.PackedWidth[i] = rb.GetUint16AsInt()
+        group.PackedWidth[i] = rb.GetUint16AsInt()
     }
 
     for i := 0; i < count; i++ {
-        sheet.PackedHeight[i] = rb.GetUint16AsInt()
+        group.PackedHeight[i] = rb.GetUint16AsInt()
     }
 
-    rb = bs[len(bs)-7-count*8-(len(sheet.Colors)-1)*3:]
+    rb = bs[len(bs)-7-count*8-(len(group.Colors)-1)*3:]
 
-    for i := 1; i < len(sheet.Colors); i++ {
-        sheet.Colors[i] = rb.GetUint24()
+    for i := 1; i < len(group.Colors); i++ {
+        group.Colors[i] = rb.GetUint24()
 
-        if sheet.Colors[i] == TransparentPixel {
-            sheet.Colors[i] = 1
+        if group.Colors[i] == TransparentPixel {
+            group.Colors[i] = 1
         }
     }
 
     rb = bs[0:]
 
     for i := 0; i < count; i++ {
-        pw, ph := sheet.PackedWidth[i], sheet.PackedHeight[i]
+        pw, ph := group.PackedWidth[i], group.PackedHeight[i]
         size := pw * ph
 
-        sheet.Index[i] = make([]uint8, size)
+        group.Index[i] = make([]uint8, size)
 
         encoding := PixelEncoding(rb.GetUint8())
 
         switch encoding {
         case HorizontalEncoding:
             for j := 0; j < size; j++ {
-                sheet.Index[i][j] = rb.GetUint8()
+                group.Index[i][j] = rb.GetUint8()
             }
         case VerticalEncoding:
             for x := 0; x < pw; x++ {
                 for y := 0; y < ph; y++ {
-                    sheet.Index[i][x+pw*y] = rb.GetUint8()
+                    group.Index[i][x+pw*y] = rb.GetUint8()
                 }
             }
         default:
@@ -139,5 +139,18 @@ func DecodeSheet(bs []byte) *Sheet {
         }
     }
 
-    return sheet
+    return group
+}
+
+func (s *Group) Get(n int) *Sprite {
+    return &Sprite{
+        Width:        s.Width,
+        Height:       s.Height,
+        OffsetX:      s.OffsetX[n],
+        OffsetY:      s.OffsetY[n],
+        PackedWidth:  s.PackedWidth[n],
+        PackedHeight: s.PackedHeight[n],
+        Colors:       s.Colors,
+        Index:        s.Index[n],
+    }
 }

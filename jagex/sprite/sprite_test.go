@@ -5,11 +5,11 @@ import (
     "testing"
 )
 
-func TestDecodeSheet(t *testing.T) {
+func TestDecodeGroup(t *testing.T) {
     tests := []struct {
         name      string
         giveBytes []byte
-        wantSheet *Sheet
+        wantGroup *Group
     }{
         {
             name:      "horizontally-encoded",
@@ -25,7 +25,7 @@ func TestDecodeSheet(t *testing.T) {
                 0x00, 0x03,
                 0x00, 0x01,
             },
-            wantSheet: &Sheet{
+            wantGroup: &Group{
                 Width:        4,
                 Height:       4,
                 OffsetX:      []int{0},
@@ -46,8 +46,8 @@ func TestDecodeSheet(t *testing.T) {
 
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            sheet := DecodeSheet(tt.giveBytes)
-            assert.Equal(t, tt.wantSheet, sheet)
+            sheet := DecodeGroup(tt.giveBytes)
+            assert.Equal(t, tt.wantGroup, sheet)
         })
     }
 }
